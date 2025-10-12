@@ -3,7 +3,7 @@ data "aws_ami" "latest_amazon_linux" {
     owners = ["amazon"]
     filter {
       name = "name"
-      values = ["al2023-ami-*-kernel-6.1-x86_64"]
+      values = ["al2023-ami-2023.9.20250929.0-kernel-6.1-x86_64"]
     }
 }
   
@@ -15,4 +15,5 @@ module "webb_app_server_dev"{
     environment_tag = var.environment_tag
     ami_id = data.aws_ami.latest_amazon_linux.id 
 }
+
 
