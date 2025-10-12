@@ -10,8 +10,9 @@ data "aws_ami" "latest_amazon_linux" {
 module "webb_app_server_dev"{
     source = "../../ec2-instances"
     instance_type = var.instance_type
-    ami_id = var.ami_id
     instance_name= var.instance_name
     managed_by = var.managed_by
     environment_tag = var.environment_tag
+    ami_id = data.aws_ami.latest_amazon_linux.id 
 }
+
