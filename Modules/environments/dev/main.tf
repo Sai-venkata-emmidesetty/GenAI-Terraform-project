@@ -1,11 +1,4 @@
-data "aws_ami" "latest_amazon_linux" {
-    most_recent = true
-    owners = ["amazon"]
-    filter {
-      name = "name"
-      values = ["al2023-ami-2023.9.20250929.0-kernel-6.1-x86_64"]
-    }
-}
+
 
 #Module for AWS
 module "webb_app_server_dev"{
@@ -14,7 +7,7 @@ module "webb_app_server_dev"{
     instance_name= var.instance_name
     managed_by = var.managed_by
     environment_tag = var.environment_tag
-    ami_id = data.aws_ami.latest_amazon_linux.id 
+    ami_id = var.ami_id
 }
 
 
