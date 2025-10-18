@@ -20,13 +20,13 @@ on:
   # Standard triggers for PR and push remain the same
   push:
     branches:
-      - main
+      - master
     paths:
       - 'environments/dev/**'
       - 'modules/ec2-instances/**'
   pull_request:
     branches:
-      - main
+      - master
     paths:
       - 'environments/dev/**'
       - 'modules/ec2-instances/**'
