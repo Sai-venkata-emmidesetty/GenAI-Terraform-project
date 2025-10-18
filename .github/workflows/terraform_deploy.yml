@@ -22,13 +22,13 @@ on:
     branches:
       - master
     paths:
-      - 'environments/dev/**'
+      - 'environemnts/dev/**'
       - 'modules/ec2-instances/**'
   pull_request:
     branches:
       - master
     paths:
-      - 'environments/dev/**'
+      - 'environemnts/dev/**'
       - 'modules/ec2-instances/**'
       
 # Required permissions
@@ -36,7 +36,7 @@ permissions:
   contents: read  # Required to checkout the code
   
 env:
-  TF_WORKING_DIR: environments/dev
+  TF_WORKING_DIR: environemnts/dev
   AWS_REGION: ${{ secrets.AWS_REGION }}
   PLAN_FILE: tfplan # Define a consistent plan file name
 
