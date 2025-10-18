@@ -1,1 +1,107 @@
 
+name: Terraform Deploy - Dev Environment
+
+on:
+  # ----------------------------------------------------
+  # NEW: Allow manual trigger via workflow_dispatch
+  # This enables the ability to choose 'apply' or 'destroy'
+  # ----------------------------------------------------
+  workflow_dispatch:
+    inputs:
+      tf_action:
+        description: 'Terraform Action to run (apply, destroy)'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
+          
+  # Standard triggers for PR and push remain the same
+  push:
+    branches:
+      - main
+    paths:
+      - 'environments/dev/**'
+      - 'modules/ec2-instances/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'environments/dev/**'
+      - 'modules/ec2-instances/**'
+      
+# Required permissions
+permissions:
+  contents: read  # Required to checkout the code
+  
+env:
+  TF_WORKING_DIR: environments/dev
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  PLAN_FILE: tfplan # Define a consistent plan file name
+
+jobs:
+  terraform:
+    name: 'Terraform Plan & Apply'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (Key/Secret)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.0 # Use a specific version
+      
+      # ----------------------------------
+      # TERRAFORM INIT
+      # ----------------------------------
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        
+      # ----------------------------------
+      # TERRAFORM PLAN & SAVE ARTIFACT
+      # Runs on PRs and Manual Triggers
+      # ----------------------------------
+      - name: Terraform Plan and Save
+        id: plan
+        # If it's a PR or a manual trigger OR if the action is 'apply' or 'destroy'
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        run: |
+          PLAN_COMMAND="terraform plan -var-file=dev.tfvars -input=false -out=${{ env.PLAN_FILE }}"
+          
+          # Check if the destroy action was requested via manual trigger
+          if [ "${{ github.event.inputs.tf_action }}" == "destroy" ]; then
+            PLAN_COMMAND="$PLAN_COMMAND -destroy"
+            echo "::notice title=Destroy Plan::Running Terraform plan with -destroy flag."
+          fi
+          
+          echo "Running plan command: $PLAN_COMMAND"
+          ${PLAN_COMMAND}
+          
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      # ----------------------------------
+      # TERRAFORM APPLY (Manual or Push)
+      # Executes the saved plan file
+      # ----------------------------------
+      - name: Terraform Apply or Destroy
+        # Only run if the action is explicitly 'apply' or 'destroy' via manual input,
+        # OR if it's a push to main (which we default to apply for simplicity).
+        if: |
+          github.event_name == 'push' || 
+          (github.event_name == 'workflow_dispatch' && (github.event.inputs.tf_action == 'apply' || github.event.inputs.tf_action == 'destroy'))
+        run: |
+          echo "Starting terraform apply with plan file."
+          terraform apply -input=false ${{ env.PLAN_FILE }}
+        working-directory: ${{ env.TF_WORKING_DIR }}
