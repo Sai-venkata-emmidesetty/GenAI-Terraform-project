@@ -15,20 +15,20 @@ on:
     branches:
       - main
     paths:
-      - 'environments/dev/**'
+      - 'Modules/environments/dev/**'
       - 'modules/ec2-instances/**'
   pull_request:
     branches:
       - main
     paths:
-      - 'environments/dev/**'
+      - 'Modules/environments/dev/**'
       - 'modules/ec2-instances/**'
 
 permissions:
   contents: read
 
 env:
-  TF_WORKING_DIR: environments/dev
+  TF_WORKING_DIR: Modules/environments/dev
   AWS_REGION: ${{ secrets.AWS_REGION }}
   PLAN_FILE: tfplan
 
