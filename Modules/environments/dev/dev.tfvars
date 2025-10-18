@@ -2,7 +2,7 @@ instance_type="t3.micro"
 instance_name="Dev-EC2-Web-Server"
 environment_tag="Dev"
 managed_by="Dev Environment DevOps"
-ami_id = "ami-0854d4f8e4bd6b834"
+ami_id = "ami-052064a798f08f0d3"
 
 
 
